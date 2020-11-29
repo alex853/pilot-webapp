@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Pilot App - Arrived</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<h3>Arrived</h3>
+Planned flight route is {????-????}<br>
+<table th:replace="flight-info.html"></table>
+[Unboarding & Unloading]<br/>
+<form method="post" action="/file-logbook"><input type="submit" value="File Logbook"></form><br>
+[Terminate Flight]<br>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Pilot App - Taxiing Out</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<h3>Taxiing Out</h3>
+Position is {????}<br>
+Planned flight route is {????-????}<br>
+<table th:replace="flight-info.html"></table>
+<form method="post" action="/takeoff"><input type="submit" value="Takeoff"></form><br>
+[Terminate Flight]<br>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<table>
+    <tr>
+        <td>Date Of Flight</td>
+        <td th:text="${#temporals.format(flight.timeOut, 'yyyy-MM-dd')}"></td>
+    </tr>
+    <tr>
+        <td>Time Out</td>
+        <td th:text="${#temporals.format(flight.timeOut, 'HH:mm')}"></td>
+    </tr>
+    <tr>
+        <td>Time Off</td>
+        <td th:text="${#temporals.format(flight.timeOff, 'HH:mm')}"></td>
+    </tr>
+    <tr>
+        <td>Time On</td>
+        <td th:text="${#temporals.format(flight.timeOn, 'HH:mm')}"></td>
+    </tr>
+    <tr>
+        <td>Time In</td>
+        <td th:text="${#temporals.format(flight.timeIn, 'HH:mm')}"></td>
+    </tr>
+</table>
