@@ -8,6 +8,8 @@ public class Flight {
     private LocalDateTime timeOff;
     private LocalDateTime timeOn;
     private LocalDateTime timeIn;
+    private String departedFrom;
+    private String landedAt;
 
     public Status getStatus() {
         return status;
@@ -47,6 +49,22 @@ public class Flight {
 
     public void setTimeIn(LocalDateTime timeIn) {
         this.timeIn = timeIn;
+    }
+
+    public String getDepartedFrom() {
+        return departedFrom;
+    }
+
+    public void setDepartedFrom(String departedFrom) {
+        this.departedFrom = departedFrom;
+    }
+
+    public String getLandedAt() {
+        return landedAt;
+    }
+
+    public void setLandedAt(String landedAt) {
+        this.landedAt = landedAt;
     }
 
     enum Status {

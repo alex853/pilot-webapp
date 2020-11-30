@@ -45,9 +45,10 @@ public class Controller {
     }
 
     @PostMapping("/blocks-off")
-    public RedirectView blocksOff(Model model) {
+    public RedirectView blocksOff(@RequestParam(name="departedFrom", required=true) String departedFrom, Model model) {
         // todo check flight existence & its status
         flight.setStatus(Flight.Status.TaxiOut);
+        flight.setDepartedFrom(departedFrom);
         flight.setTimeOut(LocalDateTime.now());
         return new RedirectView("/");
     }
@@ -61,9 +62,10 @@ public class Controller {
     }
 
     @PostMapping("/landing")
-    public RedirectView landing(Model model) {
+    public RedirectView landing(@RequestParam(name="landedAt", required=true) String landedAt, Model model) {
         // todo check flight existence & its status
         flight.setStatus(Flight.Status.TaxiIn);
+        flight.setLandedAt(landedAt);
         flight.setTimeOn(LocalDateTime.now());
         return new RedirectView("/");
     }

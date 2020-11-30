@@ -6,9 +6,7 @@
 </head>
 <body>
 <h3>Preflight</h3>
-Position is {????}<br>
-Planned flight route is {????-????}<br>
-<form method="post" action="/blocks-off"><input type="submit" value="Blocks Off"></form>
+<form method="post" action="/blocks-off"><input type="submit" value="Blocks Off" onclick="var result = prompt('Specify Departed From ICAO please'); if (!result) return false; this.form['departedFrom'].value = result.toUpperCase(); return true;"><input type="hidden" name="departedFrom"></form>
 [Refuel]<br>
 [Boarding & Loading]<br>
 [Cancel Flight]<br>

@@ -6,9 +6,8 @@
 </head>
 <body>
 <h3>Flying</h3>
-Planned flight route is {????-????}<br>
 <table th:replace="flight-info.html"></table>
-<form method="post" action="/landing"><input type="submit" value="Landing"></form><br>
+<form method="post" action="/landing"><input type="submit" value="Landing" onclick="var result = prompt('Specify Landed At ICAO please'); if (!result) return false; this.form['landedAt'].value = result.toUpperCase(); return true;"><input type="hidden" name="landedAt"></form>
 [Terminate Flight]<br>
 </body>
 </html>

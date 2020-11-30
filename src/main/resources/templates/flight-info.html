@@ -1,22 +1,43 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Pilot App - Flying</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
 <table>
     <tr>
         <td>Date Of Flight</td>
         <td th:text="${#temporals.format(flight.timeOut, 'yyyy-MM-dd')}"></td>
     </tr>
+    <!--tr>
+        <td>Planned Route</td>
+        <td>{????-????}</td>
+    </tr-->
+    <tr>
+        <td>Departed From</td>
+        <td th:text="${flight.departedFrom}">-</td>
+    </tr>
     <tr>
         <td>Time Out</td>
-        <td th:text="${#temporals.format(flight.timeOut, 'HH:mm')}"></td>
+        <td th:text="${#temporals.format(flight.timeOut, 'HH:mm')}">-</td>
     </tr>
     <tr>
         <td>Time Off</td>
-        <td th:text="${#temporals.format(flight.timeOff, 'HH:mm')}"></td>
+        <td th:text="${#temporals.format(flight.timeOff, 'HH:mm')}">-</td>
     </tr>
     <tr>
         <td>Time On</td>
-        <td th:text="${#temporals.format(flight.timeOn, 'HH:mm')}"></td>
+        <td th:text="${#temporals.format(flight.timeOn, 'HH:mm')}">-</td>
     </tr>
     <tr>
         <td>Time In</td>
-        <td th:text="${#temporals.format(flight.timeIn, 'HH:mm')}"></td>
+        <td th:text="${#temporals.format(flight.timeIn, 'HH:mm')}">-</td>
+    </tr>
+    <tr>
+        <td>Landed At</td>
+        <td th:text="${flight.landedAt}">-</td>
     </tr>
 </table>
+</body>
+</html>
