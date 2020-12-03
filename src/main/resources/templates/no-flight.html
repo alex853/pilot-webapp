@@ -1,6 +1,43 @@
-<html>
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Pilot App - Resting</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <link rel="stylesheet" href="3rd-party/bootstrap-4.5.3/css/bootstrap.min.css"/>
+    <script src="3rd-party/bootstrap-4.5.3/js/bootstrap.bundle.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
 <body>
-No flight at the moment<br>
-<form method="post" action="/start-flight"><input type="submit" value="Start Flight"></form>
+<div class="container">
+    <br>
+    <p class="h2 text-center"><img src="img/acars.png"> Pilot App</p>
+    <br>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-3 text-right">Status</div>
+        <div class="col-3"><span class="badge badge-pill badge-info">Resting</span></div> <!-- todo tooltip No in flight or in transfer -->
+        <div class="col-3"></div>
+    </div>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-3 text-right">Location</div>
+        <div class="col-3"><span class="badge badge-pill badge-success">EGLL</span></div> <!-- todo -->
+        <div class="col-3"></div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6"><form method="post" action="/start-flight"><input class="btn btn-success btn-block" type="submit" value="Start Flight"></form></div>
+        <div class="col-3"></div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6"><button class="btn btn-outline-primary btn-block" disabled>Start Transfer</button></div>
+        <div class="col-3"></div>
+    </div>
+</div>
 </body>
 </html>
