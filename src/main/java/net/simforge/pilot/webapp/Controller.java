@@ -5,19 +5,21 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.util.StringUtils;
 import net.simforge.pilot.webapp.dynamodb.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @org.springframework.stereotype.Controller
 public class Controller {
-
-    private static final String _my_user_id = "afe78778-39d3-494d-b366-e696e75b96a4";
 
     private DynamoDBMapper dynamoDBMapper;
 
@@ -29,6 +31,12 @@ public class Controller {
 
     @Autowired
     private FSLogPilotAppFlightRepository fsLogPilotAppFlightRepository;
+
+    @Autowired
+    private FSLogRecordRepository fsLogRecordRepository;
+
+    @Value("${my-user-id}")
+    private String _my_user_id; // todo read it from session
 
     @GetMapping("/")
     public String root(Model model) {
@@ -85,7 +93,7 @@ public class Controller {
 
         flight.setStatus(FlightStatus.TaxiOut);
         flight.setDepartedFrom(departedFrom);
-        flight.setTimeOut(LocalDateTime.now());
+        flight.setTimeOut(LocalDateTime.now(ZoneOffset.UTC));
 
         fsLogPilotAppFlightRepository.save(flight);
 
@@ -100,7 +108,7 @@ public class Controller {
         FSLogPilotAppFlight flight = fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID());
 
         flight.setStatus(FlightStatus.Flying);
-        flight.setTimeOff(LocalDateTime.now());
+        flight.setTimeOff(LocalDateTime.now(ZoneOffset.UTC));
 
         fsLogPilotAppFlightRepository.save(flight);
 
@@ -116,7 +124,7 @@ public class Controller {
 
         flight.setStatus(FlightStatus.TaxiIn);
         flight.setLandedAt(landedAt);
-        flight.setTimeOn(LocalDateTime.now());
+        flight.setTimeOn(LocalDateTime.now(ZoneOffset.UTC));
 
         fsLogPilotAppFlightRepository.save(flight);
 
@@ -131,12 +139,16 @@ public class Controller {
         FSLogPilotAppFlight flight = fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID());
 
         flight.setStatus(FlightStatus.Arrived);
-        flight.setTimeIn(LocalDateTime.now());
+        flight.setTimeIn(LocalDateTime.now(ZoneOffset.UTC));
 
         fsLogPilotAppFlightRepository.save(flight);
 
         return new RedirectView("/");
     }
+
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter hhmmFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
     @PostMapping("/file-logbook")
     public String finish(Model model) {
@@ -145,13 +157,50 @@ public class Controller {
         FSLogUser user = fsLogUserRepository.findByUserID(_my_user_id);
         FSLogPilotAppFlight flight = fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID());
 
-        // todo save flight record to logbook
+        FSLogRecord record = new FSLogRecord();
+        record.setUserID(user.getUserID());
+        record.setBeginningDT(flight.getTimeOut().format(dateTimeFormatter));
+        record.setRecordID(UUID.randomUUID().toString());
+        record.setDate(flight.getTimeOut().format(dateFormatter));
+        record.setType("flight");
+        record.setComment("TODO - comment"); // todo
+        record.setRemarks("TODO - remarks, tracked by pilotapp-webapp"); // todo
+
+        record.setFlight(new FSLogRecord.Flight());
+        record.getFlight().setDeparture(flight.getDepartedFrom());
+        record.getFlight().setDestination(flight.getLandedAt());
+
+        record.getFlight().setTimeOut(flight.getTimeOut().format(hhmmFormatter));
+        record.getFlight().setTimeOff(flight.getTimeOff().format(hhmmFormatter));
+        record.getFlight().setTimeOn(flight.getTimeOn().format(hhmmFormatter));
+        record.getFlight().setTimeIn(flight.getTimeIn().format(hhmmFormatter));
+
+        record.getFlight().setDistance(null);
+        record.getFlight().setTotalTime(format(Duration.between(flight.getTimeOut(), flight.getTimeIn())));
+        record.getFlight().setAirTime(format(Duration.between(flight.getTimeOff(), flight.getTimeOn())));
+
+        record.getFlight().setCallsign(null);
+        record.getFlight().setFlightNumber(null);
+        record.getFlight().setAircraftType(null);
+        record.getFlight().setAircraftRegistration(null);
+
+        fsLogRecordRepository.save(record);
 
         user.setCurrentFlightID(null);
 
         fsLogUserRepository.save(user);
 
         return "filed";
+    }
+
+    private String format(Duration duration) {
+        long seconds = duration.getSeconds();
+        long absSeconds = Math.abs(seconds);
+        String positive = String.format(
+                "%d:%02d",
+                absSeconds / 3600,
+                (absSeconds % 3600) / 60);
+        return seconds < 0 ? "-" + positive : positive;
     }
 
     @GetMapping("/greeting")
