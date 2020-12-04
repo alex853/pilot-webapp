@@ -35,7 +35,7 @@ public class Controller {
     @Autowired
     private FSLogRecordRepository fsLogRecordRepository;
 
-    @Value("${my-user-id}")
+    @Value("${my.user.id}")
     private String _my_user_id; // todo read it from session
 
     @GetMapping("/")
