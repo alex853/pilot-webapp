@@ -31,12 +31,6 @@
     <br>
     <div class="row">
         <div class="col-3"></div>
-        <div class="col-6"><form method="post" action="/blocks-off"><input class="btn btn-success btn-block" type="submit" value="Blocks Off" onclick="var result = prompt('Specify Departed From ICAO please'); if (!result) return false; this.form['departedFrom'].value = result.toUpperCase(); return true;"><input type="hidden" name="departedFrom"></form></div>
-        <div class="col-3"></div>
-    </div>
-    <br>
-    <div class="row">
-        <div class="col-3"></div>
         <div class="col-6"><button class="btn btn-secondary btn-block" disabled>Refuel</button></div>
         <div class="col-3"></div>
     </div>
@@ -44,6 +38,12 @@
     <div class="row">
         <div class="col-3"></div>
         <div class="col-6"><button class="btn btn-secondary btn-block" disabled>Boarding & Loading</button></div>
+        <div class="col-3"></div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6"><form method="post" action="/blocks-off"><input class="btn btn-success btn-block" type="submit" value="Blocks Off" onclick="var result = prompt('Specify Departed From ICAO please'); if (!result) return false; this.form['departedFrom'].value = result.toUpperCase(); return true;"><input type="hidden" name="departedFrom"></form></div>
         <div class="col-3"></div>
     </div>
     <br>
