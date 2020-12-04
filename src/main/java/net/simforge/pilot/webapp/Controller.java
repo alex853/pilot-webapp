@@ -46,7 +46,7 @@ public class Controller {
                 : null;
 
         if (flight == null) {
-            return "no-flight";
+            return "resting";
         }
 
         model.addAttribute("flight", flight);

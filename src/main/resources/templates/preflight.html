@@ -3,12 +3,55 @@
 <head>
     <title>Pilot App - Preflight</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <link rel="stylesheet" href="3rd-party/bootstrap-4.5.3/css/bootstrap.min.css"/>
+    <script src="3rd-party/jquery-3.5.1.min.js"></script>
+    <script src="3rd-party/bootstrap-4.5.3/js/bootstrap.bundle.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<h3>Preflight</h3>
-<form method="post" action="/blocks-off"><input type="submit" value="Blocks Off" onclick="var result = prompt('Specify Departed From ICAO please'); if (!result) return false; this.form['departedFrom'].value = result.toUpperCase(); return true;"><input type="hidden" name="departedFrom"></form>
-[Refuel]<br>
-[Boarding & Loading]<br>
-[Cancel Flight]<br>
+<div class="container">
+    <br>
+    <p class="h2 text-center"><img src="img/acars.png"> Pilot App</p>
+    <br>
+
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-3 text-right">Status</div>
+        <div class="col-3"><span class="badge badge-pill badge-info">Preflight</span></div>
+        <div class="col-3"></div>
+    </div>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-3 text-right">Location</div>
+        <div class="col-3"><span class="badge badge-pill badge-success">EGLL</span></div> <!-- todo -->
+        <div class="col-3"></div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6"><form method="post" action="/blocks-off"><input class="btn btn-success btn-block" type="submit" value="Blocks Off" onclick="var result = prompt('Specify Departed From ICAO please'); if (!result) return false; this.form['departedFrom'].value = result.toUpperCase(); return true;"><input type="hidden" name="departedFrom"></form></div>
+        <div class="col-3"></div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6"><button class="btn btn-secondary btn-block" disabled>Refuel</button></div>
+        <div class="col-3"></div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6"><button class="btn btn-secondary btn-block" disabled>Boarding & Loading</button></div>
+        <div class="col-3"></div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6"><button class="btn btn-outline-warning btn-block" disabled>Cancel Flight</button></div>
+        <div class="col-3"></div>
+    </div>
+</div>
 </body>
 </html>

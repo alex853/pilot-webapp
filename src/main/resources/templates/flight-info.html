@@ -5,39 +5,34 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
 <body>
-<table>
-    <tr>
-        <td>Date Of Flight</td>
-        <td th:text="${#temporals.format(flight.timeOut, 'yyyy-MM-dd')}"></td>
-    </tr>
-    <!--tr>
-        <td>Planned Route</td>
-        <td>{????-????}</td>
-    </tr-->
-    <tr>
-        <td>Departed From</td>
-        <td th:text="${flight.departedFrom}">-</td>
-    </tr>
-    <tr>
-        <td>Time Out</td>
-        <td th:text="${#temporals.format(flight.timeOut, 'HH:mm')}">-</td>
-    </tr>
-    <tr>
-        <td>Time Off</td>
-        <td th:text="${#temporals.format(flight.timeOff, 'HH:mm')}">-</td>
-    </tr>
-    <tr>
-        <td>Time On</td>
-        <td th:text="${#temporals.format(flight.timeOn, 'HH:mm')}">-</td>
-    </tr>
-    <tr>
-        <td>Time In</td>
-        <td th:text="${#temporals.format(flight.timeIn, 'HH:mm')}">-</td>
-    </tr>
-    <tr>
-        <td>Landed At</td>
-        <td th:text="${flight.landedAt}">-</td>
-    </tr>
-</table>
+<div class="row">
+    <div class="col-6 text-right">Date Of Flight</div>
+    <div class="col-6" th:text="${#temporals.format(flight.timeOut, 'yyyy-MM-dd')}"></div>
+</div>
+<!-- Planned Route? -->
+<div class="row">
+    <div class="col-6 text-right">Departed From</div>
+    <div class="col-6" th:text="${flight.departedFrom}">-</div>
+</div>
+<div class="row">
+    <div class="col-6 text-right">Time Out</div>
+    <div class="col-6" th:text="${#temporals.format(flight.timeOut, 'HH:mm')}">-</div>
+</div>
+<div class="row">
+    <div class="col-6 text-right">Time Off</div>
+    <div class="col-6" th:text="${#temporals.format(flight.timeOff, 'HH:mm')}">-</div>
+</div>
+<div class="row">
+    <div class="col-6 text-right">Time On</div>
+    <div class="col-6" th:text="${#temporals.format(flight.timeOn, 'HH:mm')}">-</div>
+</div>
+<div class="row">
+    <div class="col-6 text-right">Time In</div>
+    <div class="col-6" th:text="${#temporals.format(flight.timeIn, 'HH:mm')}">-</div>
+</div>
+<div class="row">
+    <div class="col-6 text-right">Landed At</div>
+    <div class="col-6" th:text="${flight.landedAt}">-</div>
+</div>
 </body>
 </html>
