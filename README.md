@@ -1,2 +1,2 @@
-# pilot-webapp
+# pilotapp
 Pilot App
