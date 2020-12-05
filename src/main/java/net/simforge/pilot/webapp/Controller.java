@@ -79,6 +79,20 @@ public class Controller {
         return new RedirectView("/");
     }
 
+    @PostMapping("/terminate-flight")
+    public RedirectView terminateFlight() {
+        FSLogUser user = loadUser();
+        FSLogPilotAppFlight flight = loadCurrentFlight(user);
+        if (flight == null) {
+            throw new IllegalStateException("Could not terminate flight - there is no flight to terminate");
+        }
+
+        user.setCurrentFlightID(null);
+        fsLogUserRepository.save(user);
+
+        return new RedirectView("/");
+    }
+
     @PostMapping("/blocks-off")
     public RedirectView blocksOff(@RequestParam(name="departedFrom") String departedFrom) {
         FSLogUser user = loadUser();

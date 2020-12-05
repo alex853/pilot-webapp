@@ -26,13 +26,21 @@
     <br>
     <div class="row">
         <div class="col-3"></div>
-        <div class="col-6"><form method="post" action="/blocks-on"><input class="btn btn-success btn-block" type="submit" value="Blocks On"></form></div>
+        <div class="col-6">
+            <form method="post" action="/blocks-on">
+                <input class="btn btn-success btn-block" type="submit" value="Blocks On">
+            </form>
+        </div>
         <div class="col-3"></div>
     </div>
     <br>
     <div class="row">
         <div class="col-3"></div>
-        <div class="col-6"><button class="btn btn-outline-danger btn-block" disabled>Terminate Flight</button></div>
+        <div class="col-6">
+            <form method="post" action="/terminate-flight">
+                <input class="btn btn-outline-danger btn-block" type="submit" value="Terminate Flight" onclick="return confirm('Are you sure you want to Terminate the Flight?');">
+            </form>
+        </div>
         <div class="col-3"></div>
     </div>
 </div>
