@@ -1,10 +1,7 @@
 package net.simforge.pilot.webapp;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.util.StringUtils;
 import net.simforge.pilot.webapp.dynamodb.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,29 +18,25 @@ import java.util.UUID;
 @org.springframework.stereotype.Controller
 public class Controller {
 
-    private DynamoDBMapper dynamoDBMapper;
-
-    @Autowired
-    private AmazonDynamoDB amazonDynamoDB;
-
-    @Autowired
-    private FSLogUserRepository fsLogUserRepository;
-
-    @Autowired
-    private FSLogPilotAppFlightRepository fsLogPilotAppFlightRepository;
-
-    @Autowired
-    private FSLogRecordRepository fsLogRecordRepository;
+    private final FSLogUserRepository fsLogUserRepository;
+    private final FSLogPilotAppFlightRepository fsLogPilotAppFlightRepository;
+    private final FSLogRecordRepository fsLogRecordRepository;
 
     @Value("${my.user.id}")
     private String _my_user_id; // todo read it from session
 
+    public Controller(FSLogUserRepository fsLogUserRepository,
+                      FSLogPilotAppFlightRepository fsLogPilotAppFlightRepository,
+                      FSLogRecordRepository fsLogRecordRepository) {
+        this.fsLogUserRepository = fsLogUserRepository;
+        this.fsLogPilotAppFlightRepository = fsLogPilotAppFlightRepository;
+        this.fsLogRecordRepository = fsLogRecordRepository;
+    }
+
     @GetMapping("/")
     public String root(Model model) {
-        FSLogUser user = fsLogUserRepository.findByUserID(_my_user_id);
-        FSLogPilotAppFlight flight = !StringUtils.isNullOrEmpty(user.getCurrentFlightID())
-                ? fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID())
-                : null;
+        FSLogUser user = loadUser();
+        FSLogPilotAppFlight flight = loadCurrentFlight(user);
 
         if (flight == null) {
             return "resting";
@@ -67,11 +60,13 @@ public class Controller {
     }
 
     @PostMapping("/start-flight")
-    public RedirectView startFlight(Model model) {
-        // todo check flight existence & its status
-
-        FSLogUser user = fsLogUserRepository.findByUserID(_my_user_id);
-        FSLogPilotAppFlight flight = new FSLogPilotAppFlight();
+    public RedirectView startFlight() {
+        FSLogUser user = loadUser();
+        FSLogPilotAppFlight flight = loadCurrentFlight(user);
+        if (flight != null) {
+            throw new IllegalStateException("Could not start new flight - there is another flight");
+        }
+        flight = new FSLogPilotAppFlight();
 
         flight.setFlightID(UUID.randomUUID().toString());
         flight.setStatus(FlightStatus.Preflight);
@@ -85,11 +80,15 @@ public class Controller {
     }
 
     @PostMapping("/blocks-off")
-    public RedirectView blocksOff(@RequestParam(name="departedFrom", required=true) String departedFrom, Model model) {
-        // todo check flight existence & its status
-
-        FSLogUser user = fsLogUserRepository.findByUserID(_my_user_id);
-        FSLogPilotAppFlight flight = fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID());
+    public RedirectView blocksOff(@RequestParam(name="departedFrom") String departedFrom) {
+        FSLogUser user = loadUser();
+        FSLogPilotAppFlight flight = loadCurrentFlight(user);
+        if (flight == null) {
+            throw new IllegalStateException("Could not find current flight, action cancelled");
+        }
+        if (flight.getStatus() != FlightStatus.Preflight) {
+            throw new IllegalStateException("Preflight status is expected for Blocks Off action, actual status is " + flight.getStatus());
+        }
 
         flight.setStatus(FlightStatus.TaxiOut);
         flight.setDepartedFrom(departedFrom);
@@ -101,11 +100,15 @@ public class Controller {
     }
 
     @PostMapping("/takeoff")
-    public RedirectView takeoff(Model model) {
-        // todo check flight existence & its status
-
-        FSLogUser user = fsLogUserRepository.findByUserID(_my_user_id);
-        FSLogPilotAppFlight flight = fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID());
+    public RedirectView takeoff() {
+        FSLogUser user = loadUser();
+        FSLogPilotAppFlight flight = loadCurrentFlight(user);
+        if (flight == null) {
+            throw new IllegalStateException("Could not find current flight, action cancelled");
+        }
+        if (flight.getStatus() != FlightStatus.TaxiOut) {
+            throw new IllegalStateException("TaxiOut status is expected for Takeoff action, actual status is " + flight.getStatus());
+        }
 
         flight.setStatus(FlightStatus.Flying);
         flight.setTimeOff(LocalDateTime.now(ZoneOffset.UTC));
@@ -116,11 +119,15 @@ public class Controller {
     }
 
     @PostMapping("/landing")
-    public RedirectView landing(@RequestParam(name="landedAt", required=true) String landedAt, Model model) {
-        // todo check flight existence & its status
-
-        FSLogUser user = fsLogUserRepository.findByUserID(_my_user_id);
-        FSLogPilotAppFlight flight = fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID());
+    public RedirectView landing(@RequestParam(name="landedAt") String landedAt) {
+        FSLogUser user = loadUser();
+        FSLogPilotAppFlight flight = loadCurrentFlight(user);
+        if (flight == null) {
+            throw new IllegalStateException("Could not find current flight, action cancelled");
+        }
+        if (flight.getStatus() != FlightStatus.Flying) {
+            throw new IllegalStateException("Flying status is expected for Landing action, actual status is " + flight.getStatus());
+        }
 
         flight.setStatus(FlightStatus.TaxiIn);
         flight.setLandedAt(landedAt);
@@ -132,11 +139,15 @@ public class Controller {
     }
 
     @PostMapping("/blocks-on")
-    public RedirectView blocksOn(Model model) {
-        // todo check flight existence & its status
-
-        FSLogUser user = fsLogUserRepository.findByUserID(_my_user_id);
-        FSLogPilotAppFlight flight = fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID());
+    public RedirectView blocksOn() {
+        FSLogUser user = loadUser();
+        FSLogPilotAppFlight flight = loadCurrentFlight(user);
+        if (flight == null) {
+            throw new IllegalStateException("Could not find current flight, action cancelled");
+        }
+        if (flight.getStatus() != FlightStatus.TaxiIn) {
+            throw new IllegalStateException("TaxiIn status is expected for BlockOn action, actual status is " + flight.getStatus());
+        }
 
         flight.setStatus(FlightStatus.Arrived);
         flight.setTimeIn(LocalDateTime.now(ZoneOffset.UTC));
@@ -151,11 +162,15 @@ public class Controller {
     private static final DateTimeFormatter hhmmFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
     @PostMapping("/file-logbook")
-    public String finish(Model model) {
-        // todo check flight existence & its status
-
-        FSLogUser user = fsLogUserRepository.findByUserID(_my_user_id);
-        FSLogPilotAppFlight flight = fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID());
+    public String finish() {
+        FSLogUser user = loadUser();
+        FSLogPilotAppFlight flight = loadCurrentFlight(user);
+        if (flight == null) {
+            throw new IllegalStateException("Could not find current flight, action cancelled");
+        }
+        if (flight.getStatus() != FlightStatus.Arrived) {
+            throw new IllegalStateException("Arrived status is expected for Finish action, actual status is " + flight.getStatus());
+        }
 
         FSLogRecord record = new FSLogRecord();
         record.setUserID(user.getUserID());
@@ -203,10 +218,14 @@ public class Controller {
         return seconds < 0 ? "-" + positive : positive;
     }
 
-    @GetMapping("/greeting")
-    public String greeting(@RequestParam(name="name", required=false, defaultValue="World") String name, Model model) {
-        model.addAttribute("name", name);
-        return "preflight";
+    private FSLogUser loadUser() {
+        return fsLogUserRepository.findByUserID(_my_user_id);
+    }
+
+    private FSLogPilotAppFlight loadCurrentFlight(FSLogUser user) {
+        return !StringUtils.isNullOrEmpty(user.getCurrentFlightID())
+                ? fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID())
+                : null;
     }
 
 }
