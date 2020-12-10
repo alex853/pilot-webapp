@@ -1,5 +1,6 @@
 package net.simforge.pilot.webapp;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.util.StringUtils;
 import net.simforge.pilot.webapp.dynamodb.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -21,16 +23,18 @@ public class Controller {
     private final FSLogUserRepository fsLogUserRepository;
     private final FSLogPilotAppFlightRepository fsLogPilotAppFlightRepository;
     private final FSLogRecordRepository fsLogRecordRepository;
+    private final AmazonDynamoDB amazonDynamoDB;
 
     @Value("${my.user.id}")
     private String _my_user_id; // todo read it from session
 
     public Controller(FSLogUserRepository fsLogUserRepository,
                       FSLogPilotAppFlightRepository fsLogPilotAppFlightRepository,
-                      FSLogRecordRepository fsLogRecordRepository) {
+                      FSLogRecordRepository fsLogRecordRepository, AmazonDynamoDB amazonDynamoDB) {
         this.fsLogUserRepository = fsLogUserRepository;
         this.fsLogPilotAppFlightRepository = fsLogPilotAppFlightRepository;
         this.fsLogRecordRepository = fsLogRecordRepository;
+        this.amazonDynamoDB = amazonDynamoDB;
     }
 
     @GetMapping("/")
@@ -205,8 +209,8 @@ public class Controller {
         record.getFlight().setTimeIn(flight.getTimeIn().format(hhmmFormatter));
 
         record.getFlight().setDistance(null);
-        record.getFlight().setTotalTime(format(Duration.between(flight.getTimeOut(), flight.getTimeIn())));
-        record.getFlight().setAirTime(format(Duration.between(flight.getTimeOff(), flight.getTimeOn())));
+        record.getFlight().setTotalTime(formatDuration(Duration.between(flight.getTimeOut(), flight.getTimeIn())));
+        record.getFlight().setAirTime(formatDuration(Duration.between(flight.getTimeOff(), flight.getTimeOn())));
 
         record.getFlight().setCallsign(null);
         record.getFlight().setFlightNumber(null);
@@ -222,7 +226,96 @@ public class Controller {
         return "filed";
     }
 
-    private String format(Duration duration) {
+    private FSLogUser loadUser() {
+        return fsLogUserRepository.findByUserID(_my_user_id);
+    }
+
+    private FSLogPilotAppFlight loadCurrentFlight(FSLogUser user) {
+        return !StringUtils.isNullOrEmpty(user.getCurrentFlightID())
+                ? fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID())
+                : null;
+    }
+
+/*    private void importData() {
+        DateTimeFormatter fullDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+        DynamoDB dynamoDB = new DynamoDB(amazonDynamoDB);
+        Table src = dynamoDB.getTable("fslog-poc-flight-report");
+        ItemCollection<ScanOutcome> collection = src.scan();
+        for (Item item : collection) {
+            String type = item.getString("Type");
+            if ("flight".equals(type)) {
+                LocalDateTime beginningDt = LocalDateTime.parse(item.getString("BeginningDT"), fullDateTimeFormatter);
+
+                FSLogRecord record = new FSLogRecord();
+                record.setUserID(_my_user_id);
+                record.setBeginningDT(dateTimeFormatter.format(beginningDt));
+                record.setRecordID(UUID.randomUUID().toString());
+                record.setDate(dateFormatter.format(beginningDt));
+                record.setType("flight");
+                record.setComment(item.getString("Comment"));
+                record.setRemarks(item.getString("Remarks"));
+
+                record.setFlight(new FSLogRecord.Flight());
+                record.getFlight().setDeparture(item.getString("Departure"));
+                record.getFlight().setDestination(item.getString("Destination"));
+                record.getFlight().setTimeOut(item.getString("TimeOut"));
+                record.getFlight().setTimeOff(item.getString("TimeOff"));
+                record.getFlight().setTimeOn(item.getString("TimeOn"));
+                record.getFlight().setTimeIn(item.getString("TimeIn"));
+                record.getFlight().setDistance(!item.isNull("Distance") ? item.getInt("Distance") : null);
+                record.getFlight().setTotalTime(calcDuration(record.getFlight().getTimeOut(), record.getFlight().getTimeIn()));
+                record.getFlight().setAirTime(calcDuration(record.getFlight().getTimeOff(), record.getFlight().getTimeOn()));
+                record.getFlight().setCallsign(item.getString("Callsign"));
+                record.getFlight().setFlightNumber(item.getString("FlightNumber"));
+                record.getFlight().setAircraftType(item.getString("AircraftType"));
+                record.getFlight().setAircraftRegistration(item.getString("AircraftRegistration"));
+
+                fsLogRecordRepository.save(record);
+            } else if ("transfer".equals(type)) {
+                LocalDateTime beginningDt = LocalDateTime.parse(item.getString("BeginningDT"), fullDateTimeFormatter);
+
+                FSLogRecord record = new FSLogRecord();
+                record.setUserID(_my_user_id);
+                record.setBeginningDT(dateTimeFormatter.format(beginningDt));
+                record.setRecordID(UUID.randomUUID().toString());
+                record.setDate(dateFormatter.format(beginningDt));
+                record.setType("transfer");
+                record.setComment(item.getString("Comment"));
+                record.setRemarks(item.getString("Remarks"));
+
+                record.setTransfer(new FSLogRecord.Transfer());
+                record.getTransfer().setDeparture(item.getString("Departure"));
+                record.getTransfer().setDestination(item.getString("Destination"));
+                record.getTransfer().setTimeOut(item.getString("TimeOut"));
+                record.getTransfer().setTimeIn(item.getString("TimeIn"));
+                record.getTransfer().setMethod(item.getString("Method"));
+
+                fsLogRecordRepository.save(record);
+            } else if ("discontinuity".equals(type)) {
+                LocalDateTime beginningDt = LocalDateTime.parse(item.getString("BeginningDT"), fullDateTimeFormatter);
+
+                FSLogRecord record = new FSLogRecord();
+                record.setUserID(_my_user_id);
+                record.setBeginningDT(dateTimeFormatter.format(beginningDt));
+                record.setRecordID(UUID.randomUUID().toString());
+                record.setDate(dateFormatter.format(beginningDt));
+                record.setType("discontinuity");
+                record.setComment(item.getString("Comment"));
+                record.setRemarks(item.getString("Remarks"));
+
+                record.setDiscontinuity(new FSLogRecord.Discontinuity());
+                record.getDiscontinuity().setTime(hhmmFormatter.format(beginningDt));
+
+                fsLogRecordRepository.save(record);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+        System.out.println();
+    }*/
+
+    private String formatDuration(Duration duration) {
         long seconds = duration.getSeconds();
         long absSeconds = Math.abs(seconds);
         String positive = String.format(
@@ -232,14 +325,14 @@ public class Controller {
         return seconds < 0 ? "-" + positive : positive;
     }
 
-    private FSLogUser loadUser() {
-        return fsLogUserRepository.findByUserID(_my_user_id);
-    }
-
-    private FSLogPilotAppFlight loadCurrentFlight(FSLogUser user) {
-        return !StringUtils.isNullOrEmpty(user.getCurrentFlightID())
-                ? fsLogPilotAppFlightRepository.findByFlightID(user.getCurrentFlightID())
-                : null;
+    private String calcDuration(String time1, String time2) {
+        if (time1 == null || time2 == null) {
+            return null;
+        }
+        LocalTime localTime1 = LocalTime.parse(time1, hhmmFormatter);
+        LocalTime localTime2 = LocalTime.parse(time2, hhmmFormatter);
+        Duration duration = Duration.between(localTime1, localTime2);
+        return formatDuration(duration);
     }
 
 }
