@@ -4,10 +4,12 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.util.StringUtils;
 import net.simforge.pilot.webapp.dynamodb.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.time.Duration;
@@ -98,7 +100,7 @@ public class Controller {
     }
 
     @PostMapping("/blocks-off")
-    public RedirectView blocksOff(@RequestParam(name="departedFrom") String departedFrom) {
+    public RedirectView blocksOff() {
         FSLogUser user = loadUser();
         FSLogPilotAppFlight flight = loadCurrentFlight(user);
         if (flight == null) {
@@ -109,7 +111,6 @@ public class Controller {
         }
 
         flight.setStatus(FlightStatus.TaxiOut);
-        flight.setDepartedFrom(departedFrom);
         flight.setTimeOut(LocalDateTime.now(ZoneOffset.UTC));
 
         fsLogPilotAppFlightRepository.save(flight);
@@ -137,7 +138,7 @@ public class Controller {
     }
 
     @PostMapping("/landing")
-    public RedirectView landing(@RequestParam(name="landedAt") String landedAt) {
+    public RedirectView landing() {
         FSLogUser user = loadUser();
         FSLogPilotAppFlight flight = loadCurrentFlight(user);
         if (flight == null) {
@@ -148,7 +149,6 @@ public class Controller {
         }
 
         flight.setStatus(FlightStatus.TaxiIn);
-        flight.setLandedAt(landedAt);
         flight.setTimeOn(LocalDateTime.now(ZoneOffset.UTC));
 
         fsLogPilotAppFlightRepository.save(flight);
@@ -173,6 +173,27 @@ public class Controller {
         fsLogPilotAppFlightRepository.save(flight);
 
         return new RedirectView("/");
+    }
+
+    @PostMapping("/set")
+    @ResponseBody
+    public ResponseEntity<Void> set(@RequestParam(name="property") String property, @RequestParam(name="value") String value) {
+        FSLogUser user = loadUser();
+        FSLogPilotAppFlight flight = loadCurrentFlight(user);
+        if (flight == null) {
+            throw new IllegalStateException("Could not find current flight, action cancelled");
+        }
+
+        if (property.equals("departed-from"))
+            flight.setDepartedFrom(value);
+        else if (property.equals("landed-at"))
+            flight.setLandedAt(value);
+        else
+            throw new IllegalArgumentException("Unknown property '" + property + "'");
+
+        fsLogPilotAppFlightRepository.save(flight);
+
+        return ResponseEntity.ok().build();
     }
 
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");

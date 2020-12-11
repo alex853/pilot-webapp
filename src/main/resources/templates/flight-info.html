@@ -12,7 +12,7 @@
 <!-- Planned Route? -->
 <div class="row">
     <div class="col-6 text-right">Departed From</div>
-    <div class="col-6" th:text="${flight.departedFrom}">-</div>
+    <div class="col-6"><span id="departed-from" th:text="${flight.departedFrom}"></span> <a href="javascript:modifyIcao('departed-from')" class="badge badge-primary">&#9997;</a></div>
 </div>
 <div class="row">
     <div class="col-6 text-right">Time Out</div>
@@ -32,7 +32,7 @@
 </div>
 <div class="row">
     <div class="col-6 text-right">Landed At</div>
-    <div class="col-6" th:text="${flight.landedAt}">-</div>
+    <div class="col-6"><span id="landed-at" th:text="${flight.landedAt}"></span> <a href="javascript:modifyIcao('landed-at')" class="badge badge-primary">&#9997;</a></div>
 </div>
 </body>
 </html>
