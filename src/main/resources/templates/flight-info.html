@@ -16,19 +16,19 @@
 </div>
 <div class="row">
     <div class="col-6 text-right">Time Out</div>
-    <div class="col-6" th:text="${#temporals.format(flight.timeOut, 'HH:mm')}">-</div>
+    <div class="col-6"><span id="time-out" th:text="${#temporals.format(flight.timeOut, 'HH:mm')}"></span> <a href="javascript:modifyTime('time-out')" class="badge badge-primary">&#9997;</a></div>
 </div>
 <div class="row">
     <div class="col-6 text-right">Time Off</div>
-    <div class="col-6" th:text="${#temporals.format(flight.timeOff, 'HH:mm')}">-</div>
+    <div class="col-6"><span id="time-off" th:text="${#temporals.format(flight.timeOff, 'HH:mm')}"></span> <a href="javascript:modifyTime('time-off')" class="badge badge-primary">&#9997;</a></div>
 </div>
 <div class="row">
     <div class="col-6 text-right">Time On</div>
-    <div class="col-6" th:text="${#temporals.format(flight.timeOn, 'HH:mm')}">-</div>
+    <div class="col-6"><span id="time-on" th:text="${#temporals.format(flight.timeOn, 'HH:mm')}"></span> <a href="javascript:modifyTime('time-on')" class="badge badge-primary">&#9997;</a></div>
 </div>
 <div class="row">
     <div class="col-6 text-right">Time In</div>
-    <div class="col-6" th:text="${#temporals.format(flight.timeIn, 'HH:mm')}">-</div>
+    <div class="col-6"><span id="time-in" th:text="${#temporals.format(flight.timeIn, 'HH:mm')}"></span> <a href="javascript:modifyTime('time-in')" class="badge badge-primary">&#9997;</a></div>
 </div>
 <div class="row">
     <div class="col-6 text-right">Landed At</div>

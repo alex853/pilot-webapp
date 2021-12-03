@@ -184,16 +184,41 @@ public class Controller {
             throw new IllegalStateException("Could not find current flight, action cancelled");
         }
 
-        if (property.equals("departed-from"))
-            flight.setDepartedFrom(value);
-        else if (property.equals("landed-at"))
-            flight.setLandedAt(value);
-        else
-            throw new IllegalArgumentException("Unknown property '" + property + "'");
+        switch (property) {
+            case "departed-from":
+                flight.setDepartedFrom(value);
+                break;
+            case "landed-at":
+                flight.setLandedAt(value);
+                break;
+            case "time-out":
+                flight.setTimeOut(updateTime(flight.getTimeOut(), value));
+                break;
+            case "time-off":
+                flight.setTimeOff(updateTime(flight.getTimeOff(), value));
+                break;
+            case "time-on":
+                flight.setTimeOn(updateTime(flight.getTimeOn(), value));
+                break;
+            case "time-in":
+                flight.setTimeIn(updateTime(flight.getTimeIn(), value));
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown property '" + property + "'");
+        }
 
         fsLogPilotAppFlightRepository.save(flight);
 
         return ResponseEntity.ok().build();
+    }
+
+    private LocalDateTime updateTime(LocalDateTime originalDateTime, String value) {
+        if (originalDateTime == null) {
+            throw new IllegalArgumentException("Original date/time is not set");
+        }
+
+        final String[] strs = value.split(":");
+        return originalDateTime.withHour(Integer.parseInt(strs[0])).withMinute(Integer.parseInt(strs[1]));
     }
 
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
